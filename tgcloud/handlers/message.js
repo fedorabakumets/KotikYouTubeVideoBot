@@ -11,7 +11,7 @@ export default async function handleMessage(message) {
   if (message.chat?.type !== 'private' || message.from?.id !== message.chat.id) return;
   const command = (message.text || '').split(/\s|@/)[0].toLowerCase();
   if (['/start', '/help'].includes(command)) return api.sendMessage({chat_id: message.chat.id,
-    text: '🐱 Пришли ссылку YouTube или Shorts и выбери качество видео либо только звук.\n\nПоддерживаю публичные ролики до 10 минут и файлы до 45 МБ. Если ролик не помещается, попробуй 360p.'});
+    text: '🐱 Пришли ссылку YouTube или Shorts и выбери качество видео либо только звук.\n\nОтправляю файлы до 2 ГБ через сервер больших файлов. Если он недоступен, использую обычный Telegram API для файлов до 50 МБ. Ограничения в 10 минут больше нет.\n\nЕсли ролик не помещается, попробуй 360p.'});
   const id = messageVideoId(message);
   if (!id) return api.sendMessage({chat_id: message.chat.id, text: 'Пришли ссылку youtube.com/watch, youtu.be или YouTube Shorts.'});
   return api.sendMessage({chat_id: message.chat.id, text: 'Что скачать?', reply_markup: {inline_keyboard: [

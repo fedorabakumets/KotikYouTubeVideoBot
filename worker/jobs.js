@@ -47,7 +47,7 @@ export function enqueue(job) {
 
 /** @returns {void} Запускает ожидающие задания, пока доступен загрузчик. */
 function pump() {
-  while (active < 2 && queue.length) {
+  while (active < 1 && queue.length) {
     const job = queue.shift();
     active++;
     execute(job).finally(() => {active--; users.delete(job.chatId); pump();});
@@ -72,7 +72,7 @@ async function execute(job) {
     }
   } catch (error) {
     const text = error.message || '';
-    const friendly = /минут|МБ|Трансляции|слишком большой/.test(text) ? text
+    const friendly = /минут|МБ|ГБ|Трансляции|слишком большой/.test(text) ? text
       : /sign in|confirm.*bot|403|429/i.test(text) ? 'YouTube временно отклонил загрузку. Попробуй позже.'
       : /unavailable|private|removed/i.test(text) ? 'Видео недоступно. Пришли ссылку на публичный ролик.'
       : /TIMEOUT/.test(text) ? 'Скачивание заняло слишком долго. Попробуй короткий ролик или 360p.'

@@ -16,9 +16,9 @@ test('Поддельные домены, произвольные адреса �
     'https://youtube.com@evil/watch?v=jNQXAC9IVRw', 'http://127.0.0.1/watch?v=jNQXAC9IVRw',
     'https://youtu.be/jNQXAC9IVRwmore', 'https://www.youtube.com/watch?v=bad']) assert.equal(youtubeId(url), null);
 });
-test('Длинные ролики и трансляции отклоняются до скачивания', () => {
+test('Длинные ролики поддерживаются, трансляции отклоняются', () => {
   assert.doesNotThrow(() => validateInfo({duration: 19}));
-  assert.throws(() => validateInfo({duration: 601}), /10 минут/);
+  assert.doesNotThrow(() => validateInfo({duration: 7200}));
   assert.throws(() => validateInfo({duration: 19, is_live: true}), /Трансляции/);
 });
 test('Закрытый обработчик принимает только корректные задания', () => {

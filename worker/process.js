@@ -12,7 +12,7 @@ export function runDownloader(args) {
       '--js-runtimes', 'node', '--no-playlist',
       '--socket-timeout', '15', '--retries', '1', '--no-progress', ...args], {stdio: ['ignore', 'pipe', 'pipe']});
     let stdout = '', stderr = '', timedOut = false;
-    const timer = setTimeout(() => {timedOut = true; child.kill('SIGKILL');}, 180000);
+    const timer = setTimeout(() => {timedOut = true; child.kill('SIGKILL');}, 1800000);
     child.stdout.on('data', data => {stdout = (stdout + data).slice(-2000000);});
     child.stderr.on('data', data => {stderr = (stderr + data).slice(-4000);});
     child.once('error', error => {clearTimeout(timer); reject(error);});

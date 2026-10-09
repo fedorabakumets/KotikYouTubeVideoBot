@@ -1,6 +1,8 @@
 /** @fileoverview Отправка скачанного файла и сообщений через Telegram Bot API. */
 import {openAsBlob} from 'node:fs';
 import {basename} from 'node:path';
+import {stat} from 'node:fs/promises';
+import {requestTelegram, sendWithFallback} from './transport.js';
 
 /**
  * Выполняет запрос, не раскрывая токен в диагностике.
@@ -9,13 +11,7 @@ import {basename} from 'node:path';
  * @returns {Promise<object>} Ответ Telegram без оболочки.
  */
 export async function telegram(method, body) {
-  const multipart = body instanceof FormData;
-  const response = await fetch('https://api.telegram.org/bot' + process.env.BOT_TOKEN + '/' + method, {
-    method: 'POST', ...(multipart ? {} : {headers: {'Content-Type': 'application/json'}}),
-    body: multipart ? body : JSON.stringify(body), signal: AbortSignal.timeout(120000)});
-  const result = await response.json();
-  if (!result.ok) throw new Error('TELEGRAM_' + result.error_code);
-  return result.result;
+  return requestTelegram('https://api.telegram.org', method, body);
 }
 
 /**
@@ -26,6 +22,8 @@ export async function telegram(method, body) {
  */
 export async function sendMedia(job, media) {
   const audio = job.mode === 'audio', field = audio ? 'audio' : 'video';
+  /** @returns {Promise<FormData>} Новое потоковое тело загрузки для каждой попытки. */
+  async function makeBody() {
   const form = new FormData();
   form.set('chat_id', String(job.chatId));
   form.set('caption', media.title + '\nhttps://youtu.be/' + job.videoId);
@@ -33,7 +31,10 @@ export async function sendMedia(job, media) {
   form.set('duration', String(media.duration));
   if (audio) form.set('title', media.title);
   else form.set('supports_streaming', 'true');
-  const message = await telegram(audio ? 'sendAudio' : 'sendVideo', form);
+  return form;
+  }
+  const size = media.size ?? (await stat(media.path)).size;
+  const message = await sendWithFallback(audio ? 'sendAudio' : 'sendVideo', makeBody, size);
   return {field, fileId: message[field].file_id, caption: message.caption};
 }
 
@@ -44,6 +45,6 @@ export async function sendMedia(job, media) {
  * @returns {Promise<object>} Сообщение Telegram.
  */
 export function sendCached(job, media) {
-  return telegram(media.field === 'audio' ? 'sendAudio' : 'sendVideo', {
-    chat_id: job.chatId, [media.field]: media.fileId, caption: media.caption});
+  return sendWithFallback(media.field === 'audio' ? 'sendAudio' : 'sendVideo', () => ({
+    chat_id: job.chatId, [media.field]: media.fileId, caption: media.caption}));
 }

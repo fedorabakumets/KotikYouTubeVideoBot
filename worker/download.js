@@ -2,8 +2,9 @@
 import {readdir, stat} from 'node:fs/promises';
 import {join} from 'node:path';
 import {runDownloader} from './process.js';
-/** Максимальный размер файла для отправки обычным Telegram Bot API. */
-export const MAX_BYTES = 45 * 1024 * 1024;
+import {LOCAL_LIMIT} from './transport.js';
+/** Максимальный размер файла для локального Telegram Bot API. */
+export const MAX_BYTES = LOCAL_LIMIT;
 
 /**
  * Проверяет публичность и размер публикации перед началом загрузки.
@@ -12,7 +13,7 @@ export const MAX_BYTES = 45 * 1024 * 1024;
  */
 export function validateInfo(info) {
   if (info.is_live || info.live_status === 'is_upcoming') throw new Error('Трансляции пока не поддерживаются.');
-  if (!info.duration || info.duration > 600) throw new Error('Пока поддерживаются ролики до 10 минут.');
+  if (!Number.isFinite(info.duration) || info.duration <= 0) throw new Error('Не удалось определить длительность ролика.');
 }
 
 /**
@@ -34,6 +35,6 @@ export async function download(job, directory) {
   const names = (await readdir(directory)).filter(name => /^media\.(mp4|m4a)$/.test(name));
   if (!names.length) throw new Error('Файл слишком большой. Попробуй качество 360p или только звук.');
   const path = join(directory, names[0]), size = (await stat(path)).size;
-  if (size > MAX_BYTES) throw new Error('Файл больше 45 МБ. Попробуй качество 360p или только звук.');
-  return {path, title: String(info.title || 'YouTube').slice(0, 180), duration: Math.round(info.duration)};
+  if (size > MAX_BYTES) throw new Error('Файл больше 2 ГБ. Попробуй качество 360p или только звук.');
+  return {path, size, title: String(info.title || 'YouTube').slice(0, 180), duration: Math.round(info.duration)};
 }
