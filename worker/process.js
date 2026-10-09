@@ -8,7 +8,8 @@ import {spawn} from 'node:child_process';
  */
 export function runDownloader(args) {
   return new Promise((resolve, reject) => {
-    const child = spawn('python3', ['-m', 'yt_dlp', '--js-runtimes', 'node', '--no-playlist',
+    const child = spawn('python3', ['-m', 'yt_dlp', ...(process.env.YOUTUBE_IPV6 === '1' ? ['--force-ipv6'] : []),
+      '--js-runtimes', 'node', '--no-playlist',
       '--socket-timeout', '15', '--retries', '1', '--no-progress', ...args], {stdio: ['ignore', 'pipe', 'pipe']});
     let stdout = '', stderr = '', timedOut = false;
     const timer = setTimeout(() => {timedOut = true; child.kill('SIGKILL');}, 180000);

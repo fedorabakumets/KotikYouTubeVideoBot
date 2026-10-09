@@ -26,7 +26,7 @@ export async function download(job, directory) {
   const info = JSON.parse(await runDownloader(['--dump-single-json', '--skip-download', url]));
   validateInfo(info);
   const format = job.mode === 'audio' ? 'bestaudio[ext=m4a]/bestaudio'
-    : `bestvideo[height<=${job.mode}][ext=mp4]+bestaudio[ext=m4a]/best[height<=${job.mode}][ext=mp4]`;
+    : `bestvideo[height<=${job.mode}][vcodec^=avc1][ext=mp4]+bestaudio[ext=m4a]/best[height<=${job.mode}][ext=mp4]`;
   const args = ['--max-filesize', String(MAX_BYTES), '-f', format, '-o', join(directory, 'media.%(ext)s')];
   if (job.mode === 'audio') args.push('-x', '--audio-format', 'm4a');
   else args.push('--merge-output-format', 'mp4', '--postprocessor-args', 'ffmpeg:-movflags +faststart');

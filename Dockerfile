@@ -3,7 +3,7 @@ FROM node:22-bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-venv ffmpeg ca-certificates \
     && python3 -m venv /opt/youtube && /opt/youtube/bin/pip install --no-cache-dir 'yt-dlp[default]==2026.8.19' \
     && rm -rf /var/lib/apt/lists/*
-ENV PATH="/opt/youtube/bin:$PATH" NODE_ENV=production
+ENV PATH="/opt/youtube/bin:$PATH" NODE_ENV=production YOUTUBE_IPV6=1
 WORKDIR /app
 COPY package.json ./
 COPY worker ./worker
