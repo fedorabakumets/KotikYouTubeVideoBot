@@ -1,0 +1,7 @@
+{
+  "name": "kotik-youtube-video-bot",
+  "private": true,
+  "type": "module",
+  "scripts": {"start": "node worker/server.js", "test": "node --test tests/*.test.js", "deploy": "tgcloud push"},
+  "devDependencies": {"@tgcloud/cli": "^0.2.0"}
+}
